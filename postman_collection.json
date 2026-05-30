@@ -1,0 +1,294 @@
+{
+  "info": {
+    "name": "Global Class Booking System",
+    "_postman_id": "gcb-api-collection-v1",
+    "description": "Complete API collection for the Global Class Booking System.\n\nBase URL is stored in the `baseUrl` collection variable — change it to match your environment.\n\n**Default:** `http://localhost:8080/api/v1`\n\n---\n\n### Folders\n- **Classes** — Browse and retrieve scheduled fitness/wellness classes\n- **Bookings** — Create, view, and cancel bookings\n\n### Timezone\nPass an IANA timezone string (e.g. `Asia/Kolkata`, `America/New_York`, `UTC`) in the `timezone` query param or `clientTimezone` request body field to get timestamps converted to your local time.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string",
+      "description": "Base URL of the API. Change this to match your environment (local, staging, prod)."
+    }
+  ],
+  "item": [
+    {
+      "name": "Classes",
+      "description": "Endpoints for browsing and retrieving scheduled fitness/wellness classes.",
+      "item": [
+        {
+          "name": "Get All Classes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes?timezone=Asia/Kolkata&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes"],
+              "query": [
+                {
+                  "key": "timezone",
+                  "value": "Asia/Kolkata",
+                  "description": "IANA timezone name for response timestamps (e.g. UTC, America/New_York, Asia/Kolkata). Defaults to UTC."
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Page number (0-indexed). Default: 0"
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Number of results per page. Default: 20"
+                }
+              ]
+            },
+            "description": "Returns a paginated list of all upcoming available classes. Timestamps in the response are converted to the requested timezone."
+          },
+          "response": [
+            {
+              "name": "200 OK — List of classes",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"content\": [\n    {\n      \"id\": 1,\n      \"name\": \"Morning Yoga\",\n      \"instructor\": \"Priya Sharma\",\n      \"scheduledAt\": \"2025-06-15T10:00:00+05:30\",\n      \"durationMinutes\": 60,\n      \"totalSlots\": 20,\n      \"availableSlots\": 5,\n      \"timezone\": \"Asia/Kolkata\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"HIIT Blast\",\n      \"instructor\": \"Rohan Mehta\",\n      \"scheduledAt\": \"2025-06-15T18:00:00+05:30\",\n      \"durationMinutes\": 45,\n      \"totalSlots\": 15,\n      \"availableSlots\": 0,\n      \"timezone\": \"Asia/Kolkata\"\n    }\n  ],\n  \"totalElements\": 2,\n  \"totalPages\": 1,\n  \"number\": 0,\n  \"size\": 20\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Class by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/classes/1?timezone=Asia/Kolkata",
+              "host": ["{{baseUrl}}"],
+              "path": ["classes", "1"],
+              "query": [
+                {
+                  "key": "timezone",
+                  "value": "Asia/Kolkata",
+                  "description": "IANA timezone name for response timestamps. Defaults to UTC."
+                }
+              ]
+            },
+            "description": "Fetches the full details of a single class by its ID. Returns `404` if the class does not exist."
+          },
+          "response": [
+            {
+              "name": "200 OK — Class found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"name\": \"Morning Yoga\",\n  \"instructor\": \"Priya Sharma\",\n  \"scheduledAt\": \"2025-06-15T10:00:00+05:30\",\n  \"durationMinutes\": 60,\n  \"totalSlots\": 20,\n  \"availableSlots\": 5,\n  \"timezone\": \"Asia/Kolkata\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Not Found — Class does not exist",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"timestamp\": \"2025-06-01T08:30:00Z\",\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Class with ID 99 not found\",\n  \"path\": \"/api/v1/classes/99\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "description": "Endpoints for creating, retrieving, and cancelling bookings.",
+      "item": [
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('bookingId', json.bookingId);",
+                  "    console.log('Saved bookingId:', json.bookingId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"classId\": 1,\n  \"userId\": 42,\n  \"clientTimezone\": \"Asia/Kolkata\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"]
+            },
+            "description": "Books a slot in the specified class for a user.\n\n- Returns `201 Created` on success.\n- Returns `409 Conflict` if no slots are available.\n- Returns `400 Bad Request` if the user has already booked this class.\n\n> The `bookingId` from the response is automatically saved to the `bookingId` collection variable by the test script."
+          },
+          "response": [
+            {
+              "name": "201 Created — Booking confirmed",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"bookingId\": 101,\n  \"classId\": 1,\n  \"className\": \"Morning Yoga\",\n  \"userId\": 42,\n  \"scheduledAt\": \"2025-06-15T10:00:00+05:30\",\n  \"bookedAt\": \"2025-06-01T08:23:10+05:30\",\n  \"status\": \"CONFIRMED\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "409 Conflict — No slots available",
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"timestamp\": \"2025-06-01T08:30:00Z\",\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"No available slots for class ID 1\",\n  \"path\": \"/api/v1/bookings\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "400 Bad Request — Already booked",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"timestamp\": \"2025-06-01T08:30:00Z\",\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"User 42 has already booked class ID 1\",\n  \"path\": \"/api/v1/bookings\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}"]
+            },
+            "description": "Cancels an existing booking by its ID. The booking status is set to `CANCELLED` and the slot is returned to the class. The booking record is NOT deleted from the database.\n\n> Uses the `bookingId` collection variable — run **Create Booking** first, or replace `{{bookingId}}` with a real ID."
+          },
+          "response": [
+            {
+              "name": "200 OK — Booking cancelled",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"bookingId\": 101,\n  \"status\": \"CANCELLED\",\n  \"cancelledAt\": \"2025-06-01T09:00:00+05:30\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Not Found — Booking does not exist",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"timestamp\": \"2025-06-01T09:00:00Z\",\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Booking with ID 999 not found\",\n  \"path\": \"/api/v1/bookings/999\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Bookings by User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/user/42?timezone=Asia/Kolkata&status=CONFIRMED",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "user", "42"],
+              "query": [
+                {
+                  "key": "timezone",
+                  "value": "Asia/Kolkata",
+                  "description": "IANA timezone name for response timestamps. Defaults to UTC."
+                },
+                {
+                  "key": "status",
+                  "value": "CONFIRMED",
+                  "description": "Filter by booking status: CONFIRMED or CANCELLED. Omit to return all."
+                }
+              ]
+            },
+            "description": "Returns all bookings made by a specific user. Optionally filter by `status` and convert timestamps to the given `timezone`."
+          },
+          "response": [
+            {
+              "name": "200 OK — User bookings",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "[\n  {\n    \"bookingId\": 101,\n    \"classId\": 1,\n    \"className\": \"Morning Yoga\",\n    \"userId\": 42,\n    \"scheduledAt\": \"2025-06-15T10:00:00+05:30\",\n    \"bookedAt\": \"2025-06-01T08:23:10+05:30\",\n    \"status\": \"CONFIRMED\"\n  },\n  {\n    \"bookingId\": 88,\n    \"classId\": 3,\n    \"className\": \"Zumba Evening\",\n    \"userId\": 42,\n    \"scheduledAt\": \"2025-06-10T19:00:00+05:30\",\n    \"bookedAt\": \"2025-05-28T14:00:00+05:30\",\n    \"status\": \"CONFIRMED\"\n  }\n]",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "200 OK — Empty (no bookings found)",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "[]",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
